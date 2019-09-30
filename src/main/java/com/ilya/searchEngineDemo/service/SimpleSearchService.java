@@ -1,22 +1,34 @@
 package com.ilya.searchEngineDemo.service;
 
 import com.ilya.searchEngineDemo.model.InvertedIndex;
-import com.ilya.searchEngineDemo.repository.DocumentRepository;
-import com.ilya.searchEngineDemo.repository.IndexRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SimpleSearchService implements SearchService {
+@Service
+public class SimpleSearchService {
 
-    @Autowired private IndexRepository indexRepository;
-    @Autowired private DocumentRepository documentRepository;
-    @Autowired private TfIdfService tfIdfService;
+    @Autowired private InvertedIndexService indexService;
+    @Autowired private DocumentService documentService;
 
-    public Map<Long, Double> sort(String indexId) {
-        InvertedIndex index = find(indexId);
-        double idf = tfIdfService.calculateIdf(documentRepository.getDocuments().size(), index.getDocumentsContaining().size());
+    public Set<InvertedIndex> search(String tokens) {
+        Set<InvertedIndex> indexes = new HashSet<>();
+        Arrays.stream(tokens.split("\\s")).forEach(i -> indexes.add(searchByIndex(i)));
+        return indexes;
+    }
+
+    private InvertedIndex searchByIndex(String index) {
+        Map<Long, Double> tfIdfMap = sort(index);
+        InvertedIndex curIndex = indexService.findIndexById(index).get();
+        curIndex.setTfIdfMap(tfIdfMap);
+        return curIndex;
+    }
+
+    private Map<Long, Double> sort(String indexId) {
+        InvertedIndex index = indexService.findIndexById(indexId).orElseThrow(() -> new IllegalArgumentException("Index doesn't exist in any document."));
+        double idf = calculateIdf(documentService.getDocuments().size(), index.getDocumentsContaining().size());
         Set<Long> documentsContainingIndex = index.getDocumentsContaining();
         Map<Long, Integer> wordOccurrenceInDocuments = findIndexOccurrenceInDocuments(indexId, documentsContainingIndex);
         Map<Long, Double> tfCalculatedForDocuments = calculateTfForDocuments(wordOccurrenceInDocuments);
@@ -24,13 +36,9 @@ public class SimpleSearchService implements SearchService {
         return sortByTfIdf(tfIdfCalculatedForDocuments);
     }
 
-    private InvertedIndex find(String indexId) {
-        return indexRepository.findIndexById(indexId).orElseThrow(() -> new IllegalArgumentException("Index doesn't exist in any document."));
-    }
-
     private Map<Long, Integer> findIndexOccurrenceInDocuments(String indexId, Set<Long> docs) {
         return docs.stream()
-                .collect(Collectors.toMap(Long::longValue, i -> documentRepository
+                .collect(Collectors.toMap(Long::longValue, i -> documentService
                         .findDocumentById(i)
                         .get()
                         .getIndexes()
@@ -43,7 +51,7 @@ public class SimpleSearchService implements SearchService {
                 (key, value) ->
                         tfCalculatedForDocuments.put(
                                 key,
-                                tfIdfService.calculateTf(value, documentRepository.findDocumentById(key).get().getIndexes().size())
+                                calculateTf(value, documentService.findDocumentById(key).get().getIndexes().size())
                         )
         );
         return tfCalculatedForDocuments;
@@ -54,7 +62,7 @@ public class SimpleSearchService implements SearchService {
         return tfCalculatedForDocuments.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        value -> tfIdfService.calculateTfIdf(value.getValue(), idf)
+                        value -> calculateTfIdf(value.getValue(), idf)
                 ));
     }
 
@@ -67,6 +75,18 @@ public class SimpleSearchService implements SearchService {
                         (e1, e2) -> e2,
                         LinkedHashMap::new
                 ));
+    }
+
+    private double calculateTf(int wordOccurrence, int allWords) {
+        return (double) wordOccurrence / (double) allWords;
+    }
+
+    private double calculateIdf(int allDocuments, int docsContainingWord) {
+        return Math.log10((double) allDocuments / (double) docsContainingWord);
+    }
+
+    private double calculateTfIdf(double tf, double idf) {
+        return tf * idf;
     }
 
 }

@@ -1,37 +1,17 @@
 package com.ilya.searchEngineDemo.model;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Document {
-    private static long idCounter = 0; //TODO add proper id generator
-    private long id;
-    private String body;
-    private Map<String, Integer> indexes;
+    private final long id;
+    private final String body;
+    private final Map<String, Integer> indexes;
 
-    public Document(final String body) {
+    public Document(final long id, final String body, final Map<String, Integer> indexes) {
         this.body = body;
-        this.id = generateId();
-        this.indexes = new HashMap<>();
-        createIndexMap(body);
-    }
-
-    private static synchronized long generateId() {
-        return idCounter++;
-    }
-
-    private void createIndexMap(String body) {
-        Arrays.stream(body.split("\\s"))
-                .forEach(i -> {
-                            if(indexes.containsKey(i)) {
-                                Integer keyValue = indexes.get(i);
-                                indexes.replace(i, keyValue, keyValue + 1);
-                            } else {
-                                indexes.put(i, 1);
-                            }
-                        }
-                );
+        this.id = id;
+        this.indexes = indexes;
     }
 
     public long getId() {
@@ -40,5 +20,35 @@ public class Document {
 
     public Map<String, Integer> getIndexes() {
         return indexes;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Document doc = (Document) o;
+        return Objects.equals(id, doc.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Document{" +
+                "id=" + id +
+                ", body='" + body + '\'' +
+                ", indexes=" + indexes +
+                '}';
     }
 }

@@ -5,18 +5,11 @@ import java.util.*;
 public class InvertedIndex {
 
     private final String value;
-    private final Set<Long> documentsContaining;
+    private Set<Long> documentsContaining;
+    private Map<Long, Double> tfIdfMap = new HashMap<>();
 
     public InvertedIndex(String value) {
-        this.documentsContaining = new HashSet<>();
         this.value = value;
-    }
-
-    public void addDocument(Long id) {
-        if (documentsContaining.contains(id)) {
-            throw new IllegalArgumentException("Index already contains this document id");
-        }
-        documentsContaining.add(id);
     }
 
     public String getValue() {
@@ -26,6 +19,19 @@ public class InvertedIndex {
     public Set<Long> getDocumentsContaining() {
         return documentsContaining;
     }
+
+    public void setDocumentsContaining(Set<Long> documentsContaining) {
+        this.documentsContaining = documentsContaining;
+    }
+
+    public Map<Long, Double> getTfIdfMap() {
+        return tfIdfMap;
+    }
+
+    public void setTfIdfMap(Map<Long, Double> tfIdfMap) {
+        this.tfIdfMap = tfIdfMap;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -42,6 +48,15 @@ public class InvertedIndex {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    @Override
+    public String toString() {
+        return "InvertedIndex{" +
+                "value='" + value + '\'' +
+                ", documentsContaining=" + documentsContaining +
+                ", tfIdfMap=" + tfIdfMap +
+                '}';
     }
 
 }
