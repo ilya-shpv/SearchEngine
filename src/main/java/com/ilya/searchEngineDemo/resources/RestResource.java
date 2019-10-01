@@ -18,7 +18,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/document")
 @Api(tags = "documents", description = "Simple rest api for search engine")
-public class DocumentResource {
+public class RestResource {
 
     @Autowired SimpleSearchService searchService;
     @Autowired DocumentService documentService;

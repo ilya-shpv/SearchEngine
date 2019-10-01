@@ -25,16 +25,9 @@ public class InvertedIndexService {
     }
 
     public Optional<InvertedIndex> findIndexById(String indexId) {
-//        return indexRepository.get().stream()
-//                .filter(i -> i.getValue().equals(indexId))
-//                .findFirst();
-        Optional<InvertedIndex> invertedIndex = Optional.empty();
-        for(InvertedIndex index : indexRepository.get()) {
-            if(index.getValue().equals(indexId)) {
-                invertedIndex = Optional.of(index);
-            }
-        }
-        return invertedIndex;
+        return indexRepository.get().stream()
+                .filter(i -> i.getValue().equals(indexId))
+                .findFirst();
     }
 
 
