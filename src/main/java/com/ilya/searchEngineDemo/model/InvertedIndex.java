@@ -5,11 +5,12 @@ import java.util.*;
 public class InvertedIndex {
 
     private final String value;
-    private Set<Long> documentsContaining;
+    private final Set<Long> documentsContaining;
     private Map<Long, Double> tfIdfMap = new HashMap<>();
 
     public InvertedIndex(String value) {
         this.value = value;
+        this.documentsContaining = new HashSet<>();
     }
 
     public String getValue() {
@@ -18,10 +19,6 @@ public class InvertedIndex {
 
     public Set<Long> getDocumentsContaining() {
         return documentsContaining;
-    }
-
-    public void setDocumentsContaining(Set<Long> documentsContaining) {
-        this.documentsContaining = documentsContaining;
     }
 
     public Map<Long, Double> getTfIdfMap() {

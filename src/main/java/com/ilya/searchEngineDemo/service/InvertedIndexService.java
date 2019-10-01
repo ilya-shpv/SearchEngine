@@ -21,17 +21,21 @@ public class InvertedIndexService {
     }
 
     public void addDocument(InvertedIndex index, Long id) {
-        Set<Long> documentsContaining = index.getDocumentsContaining();
-        if (documentsContaining.contains(id)) {
-            throw new IllegalArgumentException("Index already contains this document id");
-        }
-        documentsContaining.add(id);
+       index.getDocumentsContaining().add(id);
     }
 
-    public Optional<InvertedIndex> findIndexById(String id) {
-        return indexRepository.get().stream()
-                .filter(i -> i.equals(new InvertedIndex(id)))
-                .findAny();
+    public Optional<InvertedIndex> findIndexById(String indexId) {
+//        return indexRepository.get().stream()
+//                .filter(i -> i.getValue().equals(indexId))
+//                .findFirst();
+        Optional<InvertedIndex> invertedIndex = Optional.empty();
+        for(InvertedIndex index : indexRepository.get()) {
+            if(index.getValue().equals(indexId)) {
+                invertedIndex = Optional.of(index);
+            }
+        }
+        return invertedIndex;
     }
+
 
 }
