@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Service that implements document operations.
+ *
+ */
 @Service
 public class DocumentService {
 
@@ -17,7 +21,11 @@ public class DocumentService {
     @Autowired private DocumentRepository documentRepository;
     @Autowired private InvertedIndexService indexService;
 
-
+    /**
+     * Adds document to the repository. Generates auto incremented document id
+     * and creates inverted index map
+     * @param body the document content to be added
+     */
     public Document addDocument(String body) {
         Document document = new Document(generateId(), body, createIndexMap(body));
         documentRepository.add(document);
@@ -26,16 +34,26 @@ public class DocumentService {
     }
 
 
+    /**
+     * Returns document that has corresponding id
+     * @param id the document id to search by
+     */
     public Optional<Document> findDocumentById(Long id) {
         return documentRepository.get().stream()
                 .filter(i -> i.getId() == id)
                 .findAny();
     }
 
+    /**
+     * Get all the documents that stored in repository
+     */
     public Set<Document> getDocuments() {
         return documentRepository.get();
     }
 
+    /**
+     * Rebuild inverted indexes according to new documents arrival
+     */
     private void indexy() {
         documentRepository.get().forEach(doc -> {
             Set<String> indexes = new HashSet<>(doc.getIndexes().keySet());
@@ -53,10 +71,17 @@ public class DocumentService {
         });
     }
 
+    /**
+     * Simple document id generation
+     */
     private static long generateId() {
         return idCounter.incrementAndGet();
     }
 
+    /**
+     * Creates index map for newly arrived document
+     * @param body the document content to be indexed
+     */
     private Map<String, Integer> createIndexMap(String body) {
         Map<String, Integer> indexes = new HashMap<>();
         Arrays.stream(body.split("\\s"))
@@ -71,7 +96,5 @@ public class DocumentService {
                 );
         return indexes;
     }
-
-
 
 }
